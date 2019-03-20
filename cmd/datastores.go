@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/ProdriveTechnologies/vmware_exporter/pkg/util"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/vmware/govmomi/view"
+	"github.com/vmware/govmomi/find"
 	"github.com/vmware/govmomi/vim25/mo"
 )
 
@@ -12,29 +12,40 @@ var (
 		"datastore",
 		"capacity_bytes",
 		"The total capacity of the datastore in bytes",
-		"datastore")
+		"datastore",
+		"datacenter")
 	vmwareDatastoreFreeSpaceDesc = util.NewVmwareDesc(
 		"datastore",
 		"freespace_bytes",
 		"The free space available on the datastore in bytes",
-		"datastore")
+		"datastore",
+		"datacenter")
 )
 
 func (e *vmwareExporter) retrieveDatastores(ch chan<- prometheus.Metric) error {
-	manager := view.NewManager(e.Client.Client)
-	view, err := manager.CreateContainerView(e.Context, e.Client.Client.ServiceContent.RootFolder, []string{"Datastore"}, true)
+	finder := find.NewFinder(e.Client.Client, false)
+	// Look for all datacenters listed in vSphere
+	datacenters, err := finder.DatacenterList(e.Context, "*")
 	if err != nil {
 		return err
 	}
-	defer view.Destroy(e.Context)
-	var datastores []mo.Datastore
-	err = view.Retrieve(e.Context, []string{"Datastore"}, []string{"summary"}, &datastores)
-	if err != nil {
-		return err
-	}
-	for _, datastore := range datastores {
-		ch <- prometheus.MustNewConstMetric(vmwareDatastoreCapacityDesc, prometheus.GaugeValue, float64(datastore.Summary.Capacity), datastore.Summary.Name)
-		ch <- prometheus.MustNewConstMetric(vmwareDatastoreFreeSpaceDesc, prometheus.GaugeValue, float64(datastore.Summary.FreeSpace), datastore.Summary.Name)
+	for _, datacenter := range datacenters {
+		finder.SetDatacenter(datacenter)
+		// Look for all datastores within each datacenter
+		datastoresList, err := finder.DatastoreList(e.Context, "*")
+		if err != nil {
+			return err
+		}
+		for _, datastoreObject := range datastoresList {
+			var datastore mo.Datastore
+			// Get the actual datastore data
+			err = e.Client.RetrieveOne(e.Context, datastoreObject.Reference(), []string{"summary"}, &datastore)
+			if err != nil {
+				return err
+			}
+			ch <- prometheus.MustNewConstMetric(vmwareDatastoreCapacityDesc, prometheus.GaugeValue, float64(datastore.Summary.Capacity), datastore.Summary.Name, datacenter.Name())
+			ch <- prometheus.MustNewConstMetric(vmwareDatastoreFreeSpaceDesc, prometheus.GaugeValue, float64(datastore.Summary.FreeSpace), datastore.Summary.Name, datacenter.Name())
+		}
 	}
 	return nil
 }

@@ -38,11 +38,11 @@ func (e *vmwareExporter) retrieveVms(ch chan<- prometheus.Metric) error {
 		return err
 	}
 	for _, vm := range vms {
-		cpuHertz := float64(int64(vm.Summary.QuickStats.OverallCpuUsage)*1000000)
+		cpuHertz := float64(int64(vm.Summary.QuickStats.OverallCpuUsage) * 1000000)
 		ch <- prometheus.MustNewConstMetric(vmwareVmCpuUsageHzDesc, prometheus.GaugeValue, cpuHertz, vm.Summary.Config.Name)
-		memoryUsed := float64(int64(vm.Summary.QuickStats.GuestMemoryUsage)*1000000000)
+		memoryUsed := float64(int64(vm.Summary.QuickStats.GuestMemoryUsage) * 1000000000)
 		ch <- prometheus.MustNewConstMetric(vmwareVmMemoryUsageBytesDesc, prometheus.GaugeValue, memoryUsed, vm.Summary.Config.Name)
-		memoryAvailable := float64(int64(vm.Summary.Config.MemorySizeMB)*1000000000)
+		memoryAvailable := float64(int64(vm.Summary.Config.MemorySizeMB) * 1000000000)
 		ch <- prometheus.MustNewConstMetric(vmwareVmMemoryAvailableBytesDesc, prometheus.GaugeValue, memoryAvailable, vm.Summary.Config.Name)
 	}
 	return nil
@@ -51,4 +51,3 @@ func (e *vmwareExporter) retrieveVms(ch chan<- prometheus.Metric) error {
 func describeVms(ch chan<- *prometheus.Desc) {
 	ch <- vmwareVmCpuUsageHzDesc
 }
-

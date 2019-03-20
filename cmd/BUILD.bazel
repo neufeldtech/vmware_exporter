@@ -13,9 +13,9 @@ go_library(
     deps = [
         "//pkg/util:go_default_library",
         "@com_github_prometheus_client_golang//prometheus:go_default_library",
-        "@com_github_prometheus_client_golang//prometheus/promhttp:go_default_library",
         "@com_github_prometheus_common//log:go_default_library",
         "@com_github_vmware_govmomi//:go_default_library",
+        "@com_github_vmware_govmomi//find:go_default_library",
         "@com_github_vmware_govmomi//view:go_default_library",
         "@com_github_vmware_govmomi//vim25/mo:go_default_library",
     ],

@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"flag"
-	"net/url"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/ProdriveTechnologies/vmware_exporter/pkg/util"
@@ -15,7 +15,7 @@ import (
 
 type vmwareExporter struct {
 	Context context.Context
-	Client *govmomi.Client
+	Client  *govmomi.Client
 }
 
 func NewVmwareExporter(vcenterUrl string) (*vmwareExporter, error) {
@@ -29,8 +29,8 @@ func NewVmwareExporter(vcenterUrl string) (*vmwareExporter, error) {
 		return &vmwareExporter{}, err
 	}
 	return &vmwareExporter{
-			Context: ctx,
-			Client: client,
+		Context: ctx,
+		Client:  client,
 	}, nil
 }
 
@@ -39,7 +39,6 @@ var (
 		"",
 		"scrape_success",
 		"Whether scraping the VMWare environment was successful.")
-
 )
 
 func (e *vmwareExporter) Collect(ch chan<- prometheus.Metric) {
