@@ -6,9 +6,11 @@ library](https://github.com/vmware/govmomi/).
 
 ## Building this exporter
 
-The exporter can be built using Bazel:
+The exporter can be built using go 1.12+:
 
-    bazel build //...
+```bash
+$ make
+```
 
 ## Using this exporter
 

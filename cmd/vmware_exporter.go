@@ -9,6 +9,7 @@ import (
 
 	"github.com/ProdriveTechnologies/vmware_exporter/pkg/util"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
 	"github.com/vmware/govmomi"
 )
@@ -87,7 +88,7 @@ func main() {
 	}
 	prometheus.MustRegister(e)
 
-	http.Handle(*metricsPath, prometheus.Handler())
+	http.Handle(*metricsPath, promhttp.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`
 			<html>
